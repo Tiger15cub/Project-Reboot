@@ -32,11 +32,16 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
 
-    - name: Force C++17 Standard
+    - name: Patch Code for Modern MSVC
       shell: powershell
       run: |
-        $path = "Project Reboot\Project Reboot.vcxproj"
-        (Get-Content $path) -replace '<LanguageStandard>stdcpplatest</LanguageStandard>', '<LanguageStandard>stdcpp17</LanguageStandard>' | Set-Content $path
+        # Force the project file to strictly use standard behavior to allow C++20 modules
+        $projPath = "Project Reboot\Project Reboot.vcxproj"
+        (Get-Content $projPath) -replace '<ConformanceMode>false</ConformanceMode>', '<ConformanceMode>true</ConformanceMode>' | Set-Content $projPath
+
+        # Inject missing forward declarations to prevent two-phase lookup errors
+        $structsPath = "Project Reboot\structs.h"
+        (Get-Content $structsPath) -replace '#pragma once', "#pragma once`nclass UObject;`nextern UObject* GetByIndex(int Index);" | Set-Content $structsPath
 
 
     - name: Build

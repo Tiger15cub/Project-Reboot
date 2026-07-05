@@ -39,9 +39,9 @@ jobs:
         $projPath = "Project Reboot\Project Reboot.vcxproj"
         (Get-Content $projPath) -replace '<ConformanceMode>false</ConformanceMode>', '<ConformanceMode>true</ConformanceMode>' | Set-Content $projPath
 
-        # Inject missing forward declarations to prevent two-phase lookup errors
+        # Inject missing forward declarations using the correct type 'struct' instead of 'class'
         $structsPath = "Project Reboot\structs.h"
-        (Get-Content $structsPath) -replace '#pragma once', "#pragma once`nclass UObject;`nextern UObject* GetByIndex(int Index);" | Set-Content $structsPath
+        (Get-Content $structsPath) -replace '#pragma once', "#pragma once`nstruct UObject;`nextern UObject* GetByIndex(int Index);" | Set-Content $structsPath
 
 
     - name: Build

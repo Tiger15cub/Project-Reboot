@@ -39,10 +39,14 @@ jobs:
         $projPath = "Project Reboot\Project Reboot.vcxproj"
         (Get-Content $projPath) -replace '<ConformanceMode>false</ConformanceMode>', '<ConformanceMode>true</ConformanceMode>' | Set-Content $projPath
 
-        # Inject missing forward declarations using the correct type 'struct' instead of 'class'
+        # Inject missing forward declarations right at the beginning of structs.h
         $structsPath = "Project Reboot\structs.h"
-        (Get-Content $structsPath) -replace '#pragma once', "#pragma once`nstruct UObject;`nextern UObject* GetByIndex(int Index);" | Set-Content $structsPath
-
+        $declaration = @"
+        #pragma once
+        struct UObject;
+        extern "C" UObject* GetByIndex(int Index);
+        "@
+        (Get-Content $structsPath) -replace '#pragma once', $declaration | Set-Content $structsPath
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
